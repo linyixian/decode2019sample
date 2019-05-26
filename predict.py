@@ -30,7 +30,8 @@ class TFObjectDetection(ObjectDetection):
 def main(image_filename):
     # Load a TensorFlow model
     graph_def = tf.GraphDef()
-    with tf.gfile.FastGFile(MODEL_FILENAME, 'rb') as f:
+    #with tf.gfile.FastGFile(MODEL_FILENAME, 'rb') as f:
+    with tf.gfile.GFile(MODEL_FILENAME, 'rb') as f:
         graph_def.ParseFromString(f.read())
 
     # Load labels
@@ -41,15 +42,27 @@ def main(image_filename):
 
     image = Image.open(image_filename)
     predictions = od_model.predict_image(image)
-    print(predictions)
-
-    for p in predictions:
-        print(p["probability"])
-        print(p["tagName"])
 
     ##
     pilImg=np.asarray(image)
     cvImage=cv2.cvtColor(pilImg,cv2.COLOR_RGB2BGR)
+    screen=cvImage
+    ih,iw,ic=screen.shape
+    
+    for p in predictions:
+        if p["probability"]>0.1:
+            
+            probab=int(p["probability"]*100)
+            w=int(p["boundingBox"]["width"]*iw)
+            h=int(p["boundingBox"]["height"]*ih)
+            l=int(p["boundingBox"]["left"]*iw)
+            t=int(p["boundingBox"]["top"]*ih)
+
+            cv2.rectangle(cvImage,(l,t),(l+w,t+h),(0,0,255),2)
+            cv2.putText(cvImage,str(probab)+"%",(l+5,t-5),cv2.FONT_HERSHEY_PLAIN,1.5,(0,0,255),2)
+            cv2.putText(cvImage,p["tagName"],(l+60,t-5),cv2.FONT_HERSHEY_PLAIN,1.5,(0,0,255),2)
+            
+
     cv2.imshow('Dog',cvImage)
 
     cv2.waitKey()
