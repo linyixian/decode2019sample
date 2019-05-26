@@ -50,7 +50,7 @@ def main(image_filename):
     ih,iw,ic=screen.shape
     
     for p in predictions:
-        if p["probability"]>0.1:
+        if p["probability"]>0.4:
             
             probab=int(p["probability"]*100)
             w=int(p["boundingBox"]["width"]*iw)
